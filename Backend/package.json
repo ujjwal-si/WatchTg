@@ -1,0 +1,15 @@
+{
+  "name": "watchtg",
+  "version": "1.0.0",
+  "description": "This is backend of watchtg",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "ujjwal",
+  "license": "ISC",
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "ws": "^8.18.3"
+  }
+}
