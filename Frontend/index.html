@@ -31,20 +31,35 @@
         let ws;
 
         function create() {
-            ws = new WebSocket('ws://<PUBLIC_IP>:8080');
+            ws = new WebSocket('ws://20.244.29.96:8080');
             ws.binaryType = 'arraybuffer';
             ws.onopen = () => ws.send(Uint8Array.of(67,0)); // 'C'
             ws.onmessage = e => {
-                const roomCode = new TextDecoder().decode(e.data);
-                logMessage('Room created: ' + roomCode);
+                let msg;
+
+                if(e.data instanceof ArrayBuffer) {
+                    msg = new TextDecoder().decode(e.data);
+                } else {
+                    msg = e.data;
+                }
+
+                // Server sends 'K' when join is successful, otherwise a room code
+                if(msg === 'K') {
+                    logMessage('Joined room successfully');
+                } else if(msg.length === 8) { // room code length
+                    logMessage('Room created: ' + msg);
+                } else {
+                    logMessage('Peer: ' + msg);
+                }
             };
-            ws.onmessage = e => logIncoming(e);
+
+
         }
 
         function join() {
             const code = document.getElementById('code').value;
             if(!code) return alert('Enter room code');
-            ws = new WebSocket('ws://localhost:8080');
+            ws = new WebSocket('ws://20.244.29.96:8080');
             ws.binaryType = 'arraybuffer';
             ws.onopen = () => {
                 const enc = new TextEncoder();
