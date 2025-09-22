@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
+    <style>
+        #messages {
+            width: 100%;
+            height: 200px;
+            border: 1px solid #ccc;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        #msgInput {
+            width: 80%;
+        }
+    </style>
+</head>
+<body>
+
+    <button onclick="create()">Create server</button>
+    <input id="code" placeholder="Room code"><button onclick="join()">Join</button>
+
+    <div id="messages"></div>
+    <input id="msgInput" placeholder="Type message">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        let ws;
+
+        function create() {
+            ws = new WebSocket('ws://<PUBLIC_IP>:8080');
+            ws.binaryType = 'arraybuffer';
+            ws.onopen = () => ws.send(Uint8Array.of(67,0)); // 'C'
+            ws.onmessage = e => {
+                const roomCode = new TextDecoder().decode(e.data);
+                logMessage('Room created: ' + roomCode);
+            };
+            ws.onmessage = e => logIncoming(e);
+        }
+
+        function join() {
+            const code = document.getElementById('code').value;
+            if(!code) return alert('Enter room code');
+            ws = new WebSocket('ws://localhost:8080');
+            ws.binaryType = 'arraybuffer';
+            ws.onopen = () => {
+                const enc = new TextEncoder();
+                ws.send(Uint8Array.of(74, code.length, ...enc.encode(code)));
+            };
+            ws.onmessage = e => logIncoming(e);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('msgInput');
+            const msg = input.value;
+            if(!msg || !ws) return;
+            const enc = new TextEncoder();
+            ws.send(enc.encode(msg));
+            logMessage('You: ' + msg);
+            input.value = '';
+        }
+
+        function logIncoming(e) {
+            try {
+                const msg = new TextDecoder().decode(e.data);
+                if(msg !== 'K') logMessage('Peer: ' + msg);
+            } catch {}
+        }
+
+        function logMessage(msg) {
+            const div = document.getElementById('messages');
+            div.innerHTML += msg + '<br>';
+            div.scrollTop = div.scrollHeight;
+        }
+    </script>
+
+</body>
+</html>

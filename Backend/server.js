@@ -1,6 +1,5 @@
 import { WebSocketServer } from "ws";
 import crypto from 'crypto';
-import { Socket } from "dgram";
 
 const wss = new WebSocketServer({port : 8080}, () =>{
     console.log("WS is ready on 8080")
