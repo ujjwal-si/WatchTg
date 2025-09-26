@@ -4,93 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebSocket Chat</title>
-    <style>
-        #messages {
-            width: 100%;
-            height: 200px;
-            border: 1px solid #ccc;
-            overflow-y: auto;
-            margin-bottom: 10px;
-            padding: 5px;
-        }
-        #msgInput {
-            width: 80%;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <button onclick="create()">Create server</button>
-    <input id="code" placeholder="Room code"><button onclick="join()">Join</button>
+    <button onclick="createRoom()">Create server</button>
+    <input id="code" placeholder="Room code">
+    <button onclick="joinRoom()">Join</button>
 
     <div id="messages"></div>
-    <input id="msgInput" placeholder="Type message">
-    <button onclick="sendMessage()">Send</button>
-
-    <script>
-        let ws;
-
-        function create() {
-            ws = new WebSocket('ws://20.244.29.96:8080');
-            ws.binaryType = 'arraybuffer';
-            ws.onopen = () => ws.send(Uint8Array.of(67,0)); // 'C'
-            ws.onmessage = e => {
-                let msg;
-
-                if(e.data instanceof ArrayBuffer) {
-                    msg = new TextDecoder().decode(e.data);
-                } else {
-                    msg = e.data;
-                }
-
-                // Server sends 'K' when join is successful, otherwise a room code
-                if(msg === 'K') {
-                    logMessage('Joined room successfully');
-                } else if(msg.length === 8) { // room code length
-                    logMessage('Room created: ' + msg);
-                } else {
-                    logMessage('Peer: ' + msg);
-                }
-            };
 
 
-        }
+    <video id="video" width="690px" controls></video>
+    <input id="videoFile" type="file" accept="video/*" onchange="loadVideo(this)">
+    <h2 id="errorText"></h2>
 
-        function join() {
-            const code = document.getElementById('code').value;
-            if(!code) return alert('Enter room code');
-            ws = new WebSocket('ws://20.244.29.96:8080');
-            ws.binaryType = 'arraybuffer';
-            ws.onopen = () => {
-                const enc = new TextEncoder();
-                ws.send(Uint8Array.of(74, code.length, ...enc.encode(code)));
-            };
-            ws.onmessage = e => logIncoming(e);
-        }
 
-        function sendMessage() {
-            const input = document.getElementById('msgInput');
-            const msg = input.value;
-            if(!msg || !ws) return;
-            const enc = new TextEncoder();
-            ws.send(enc.encode(msg));
-            logMessage('You: ' + msg);
-            input.value = '';
-        }
 
-        function logIncoming(e) {
-            try {
-                const msg = new TextDecoder().decode(e.data);
-                if(msg !== 'K') logMessage('Peer: ' + msg);
-            } catch {}
-        }
-
-        function logMessage(msg) {
-            const div = document.getElementById('messages');
-            div.innerHTML += msg + '<br>';
-            div.scrollTop = div.scrollHeight;
-        }
-    </script>
-
+    <script src="script.js"></script>
 </body>
 </html>
